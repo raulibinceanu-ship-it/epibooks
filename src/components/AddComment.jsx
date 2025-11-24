@@ -1,5 +1,8 @@
 import { Component } from "react";
-import { Form, Button } from "react-bootstrap";
+
+const API_URL = "https://striveschool-api.herokuapp.com/api/comments/";
+const AUTH_TOKEN =
+  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTFmMDVjMzIzZTc0MDAwMTVmN2ZkYWQiLCJpYXQiOjE3NjM5ODU3NTUsImV4cCI6MTc2NTE5NTM1NX0.1rwrbQVF0MrCLCqBodrr-5ysqADXGkfgl7LL7bQd0XE";
 
 class AddComment extends Component {
   state = {
@@ -7,7 +10,7 @@ class AddComment extends Component {
     rate: "1",
   };
 
-  handleSubmit = async (e) => {
+  handleSubmit = (e) => {
     e.preventDefault();
 
     const newComment = {
@@ -16,47 +19,48 @@ class AddComment extends Component {
       elementId: this.props.asin,
     };
 
-    try {
-      const response = await fetch(
-        "https://striveschool-api.herokuapp.com/api/comments/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTFmMDVjMzIzZTc0MDAwMTVmN2ZkYWQiLCJpYXQiOjE3NjM2NDA3NzEsImV4cCI6MTc2NDg1MDM3MX0.7ZBhrYBFs-kIIN4DmySlTxGlNjB1kP7rj2Q0bGQyIzw",
-          },
-          body: JSON.stringify(newComment),
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(newComment),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: AUTH_TOKEN,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Errore nella POST");
         }
-      );
-
-      if (response.ok) {
-        alert("Commento aggiunto!");
+        return res.json();
+      })
+      .then(() => {
+        // pulisco il form
         this.setState({ comment: "", rate: "1" });
-        this.props.onCommentAdded(); // ricarica i commenti
-      } else {
-        alert("Errore durante l'invio del commento");
-      }
-    } catch (err) {
-      console.log(err);
-    }
+        // ricarico i commenti
+        if (this.props.onCommentAdded) {
+          this.props.onCommentAdded();
+        }
+      })
+      .catch((err) => console.log(err));
   };
 
   render() {
     return (
-      <Form onSubmit={this.handleSubmit} className="mt-3">
-        <Form.Group className="mb-2">
-          <Form.Label>Commento</Form.Label>
-          <Form.Control
+      <form onSubmit={this.handleSubmit} className="mt-3">
+        <div className="mb-2">
+          <label className="form-label">Commento</label>
+          <input
             type="text"
+            className="form-control"
             value={this.state.comment}
             onChange={(e) => this.setState({ comment: e.target.value })}
           />
-        </Form.Group>
+        </div>
 
-        <Form.Group className="mb-2">
-          <Form.Label>Voto</Form.Label>
-          <Form.Select
+        <div className="mb-2">
+          <label className="form-label">Voto (1-5)</label>
+          <select
+            className="form-select"
             value={this.state.rate}
             onChange={(e) => this.setState({ rate: e.target.value })}
           >
@@ -65,13 +69,13 @@ class AddComment extends Component {
             <option>3</option>
             <option>4</option>
             <option>5</option>
-          </Form.Select>
-        </Form.Group>
+          </select>
+        </div>
 
-        <Button type="submit" className="mt-2">
-          Aggiungi commento
-        </Button>
-      </Form>
+        <button type="submit" className="btn btn-primary btn-sm">
+          Invia
+        </button>
+      </form>
     );
   }
 }
