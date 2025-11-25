@@ -1,22 +1,22 @@
-import { Component } from "react";
+import { useState } from "react";
 
 const API_URL = "https://striveschool-api.herokuapp.com/api/comments/";
 const AUTH_TOKEN =
   "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTFmMDVjMzIzZTc0MDAwMTVmN2ZkYWQiLCJpYXQiOjE3NjM5ODU3NTUsImV4cCI6MTc2NTE5NTM1NX0.1rwrbQVF0MrCLCqBodrr-5ysqADXGkfgl7LL7bQd0XE";
 
-class AddComment extends Component {
-  state = {
+function AddComment({ asin, onCommentAdded }) {
+  const [form, setForm] = useState({
     comment: "",
     rate: "1",
-  };
+  });
 
-  handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     const newComment = {
-      comment: this.state.comment,
-      rate: this.state.rate,
-      elementId: this.props.asin,
+      comment: form.comment,
+      rate: form.rate,
+      elementId: asin,
     };
 
     fetch(API_URL, {
@@ -28,56 +28,48 @@ class AddComment extends Component {
       },
     })
       .then((res) => {
-        if (!res.ok) {
-          throw new Error("Errore nella POST");
-        }
+        if (!res.ok) throw new Error("Errore nella POST");
         return res.json();
       })
       .then(() => {
-        // pulisco il form
-        this.setState({ comment: "", rate: "1" });
-        // ricarico i commenti
-        if (this.props.onCommentAdded) {
-          this.props.onCommentAdded();
-        }
+        setForm({ comment: "", rate: "1" });
+        onCommentAdded && onCommentAdded();
       })
       .catch((err) => console.log(err));
   };
 
-  render() {
-    return (
-      <form onSubmit={this.handleSubmit} className="mt-3">
-        <div className="mb-2">
-          <label className="form-label">Commento</label>
-          <input
-            type="text"
-            className="form-control"
-            value={this.state.comment}
-            onChange={(e) => this.setState({ comment: e.target.value })}
-          />
-        </div>
+  return (
+    <form onSubmit={handleSubmit} className="mt-3">
+      <div className="mb-2">
+        <label className="form-label">Commento</label>
+        <input
+          type="text"
+          className="form-control"
+          value={form.comment}
+          onChange={(e) => setForm({ ...form, comment: e.target.value })}
+        />
+      </div>
 
-        <div className="mb-2">
-          <label className="form-label">Voto (1-5)</label>
-          <select
-            className="form-select"
-            value={this.state.rate}
-            onChange={(e) => this.setState({ rate: e.target.value })}
-          >
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
-          </select>
-        </div>
+      <div className="mb-2">
+        <label className="form-label">Voto (1-5)</label>
+        <select
+          className="form-select"
+          value={form.rate}
+          onChange={(e) => setForm({ ...form, rate: e.target.value })}
+        >
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
+        </select>
+      </div>
 
-        <button type="submit" className="btn btn-primary btn-sm">
-          Invia
-        </button>
-      </form>
-    );
-  }
+      <button type="submit" className="btn btn-primary btn-sm">
+        Invia
+      </button>
+    </form>
+  );
 }
 
 export default AddComment;
