@@ -1,4 +1,5 @@
 import { Alert } from "react-bootstrap";
+
 const Welcome = () => {
   return (
     <Alert variant="info" className="mt-4 text-center">
@@ -7,4 +8,5 @@ const Welcome = () => {
     </Alert>
   );
 };
+
 export default Welcome;
